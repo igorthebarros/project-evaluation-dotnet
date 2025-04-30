@@ -98,5 +98,17 @@ namespace Database.Repositories
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             return entity;
         }
+
+        public async Task<ICollection<Order>> GetOrdersBasedOnUsersData(Guid userId, Guid clientId, int count)
+        {
+            var existingOrders = await _context.Orders
+                .Include(x => x.Items)
+                .Where(x => x.ClientId == clientId &&
+                    x.UserId == userId &&
+                    x.Items.Count == count)
+                .ToListAsync();
+
+            return existingOrders;
+        }
     }
 }
