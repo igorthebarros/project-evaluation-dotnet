@@ -61,8 +61,7 @@ public class Program
         }
         catch (Exception e)
         {
-            Console.WriteLine("ApiGateway terminated unexpectedly");
-            Log.Fatal(e, "ApiGateway terminated unexpectedly");
+            Log.Fatal(e, "WebAPI terminated unexpectedly");
         }
         finally
         {
