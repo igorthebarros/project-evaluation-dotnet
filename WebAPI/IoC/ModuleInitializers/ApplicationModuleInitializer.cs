@@ -1,4 +1,5 @@
-﻿using Application.Services;
+﻿using Application.Pocos;
+using Application.Services;
 using Domain.Contracts.Services;
 using IoC.Interfaces;
 using Microsoft.AspNetCore.Builder;
@@ -11,6 +12,9 @@ namespace IoC.ModuleInitializers
         public void Initialize(WebApplicationBuilder builder)
         {
             builder.Services.AddScoped<IOrderService, OrderService>();
+
+            builder.Services.Configure<FeatureFlags>(
+                builder.Configuration.GetSection("FeatureFlags"));
         }
     }
 }
