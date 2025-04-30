@@ -1,4 +1,6 @@
-﻿namespace Application.Dtos
+﻿using Domain.Entities;
+
+namespace Application.Dtos
 {
     public class OrderDto
     {
@@ -9,5 +11,6 @@
         public string Status { get; set; } = string.Empty;
         public decimal Tax { get; set; }
         public Guid UserId { get; set; }
+        public ICollection<OrderProduct> Items { get; set; } = new List<OrderProduct>();
     }
 }
