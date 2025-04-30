@@ -9,13 +9,13 @@ namespace Domain.Contracts.Services
         /// </summary>
         /// <param name="order"></param>
         /// <returns>A boolean to inform if is duplicated or not.</returns>
-        bool IsOrderDuplicated(Order order);
+        Task<bool> IsOrderDuplicated(Order order);
         /// <summary>
         /// Will calculate the full tax value for a given order.
         /// </summary>
         /// <param name="order"></param>
         /// <returns>The total amount of tax for a given order.</returns>
-        decimal GetFullTaxValue(Order order);
+        //decimal GetFullTaxValue(Order order);
         /// <summary>
         /// Will calculate the current tax for a given order.
         /// </summary>
@@ -28,5 +28,11 @@ namespace Domain.Contracts.Services
         /// <param name="order"></param>
         /// <returns>The value of the tax calculated.</returns>
         decimal CalculateTaxReform(Order order);
+        /// <summary>
+        /// Will calculate the total value of all items based on the given order.
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns>The total value of the items.</returns>
+        decimal CalculateOrdersItemsTotalValue(Order order);
     }
 }

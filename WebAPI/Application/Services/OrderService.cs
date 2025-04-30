@@ -1,20 +1,35 @@
-﻿using Domain.Contracts.Repositories;
+﻿using Application.Pocos;
+using AutoMapper;
+using Domain.Contracts.Repositories;
 using Domain.Contracts.Services;
 using Domain.Entities;
+using Microsoft.Extensions.Options;
 
 namespace Application.Services
 {
     public class OrderService : IOrderService
     {
         private readonly IOrderRepository _repository;
+        private readonly FeatureFlags _featureFlags;
+        private static readonly decimal CurrentTax = 0.3m; // Calculo em vigor
+        private static readonly decimal TaxReform = 0.2m; // Calculo refora tributária
 
-        public OrderService(IOrderRepository repository)
+        public OrderService(IOrderRepository repository, IOptions<FeatureFlags> featureFlags)
         {
             _repository = repository;
+            _featureFlags = featureFlags.Value;
         }
 
         public async Task<Order> CreateAsync(Order entity, CancellationToken cancellationToken = default)
         {
+            var isOrderDuplicated = await IsOrderDuplicated(entity);
+
+            var totalValueTaxApplied = _featureFlags.UseTaxReform
+                ? CalculateTaxReform(entity)
+                : CalculateCurrentTax(entity);
+
+            entity.Tax = totalValueTaxApplied;
+
             var result = await _repository.CreateAsync(entity, cancellationToken).ConfigureAwait(false);
             return result;
         }
@@ -45,22 +60,40 @@ namespace Application.Services
 
         public decimal CalculateCurrentTax(Order order)
         {
-            throw new NotImplementedException();
+            var totalItemsValue = CalculateOrdersItemsTotalValue(order);
+            return totalItemsValue * CurrentTax;
         }
 
         public decimal CalculateTaxReform(Order order)
         {
-            throw new NotImplementedException();
+            var totalItemsValue = CalculateOrdersItemsTotalValue(order);
+            return totalItemsValue * TaxReform;
         }
 
-        public decimal GetFullTaxValue(Order order)
+        public async Task<bool> IsOrderDuplicated(Order order)
         {
-            throw new NotImplementedException();
+            var existingOrders = await _repository.GetOrdersBasedOnUsersData(order.UserId, order.ClientId, order.Items.Count);
+
+            if (!existingOrders.Any())
+                return false;
+
+            foreach(var existingOrder in existingOrders)
+            {
+                var sameProducts = !order.Items
+                    .ExceptBy(order.Items.Select(x => x.ProductId), x => x.ProductId)
+                    .Any();
+
+                if (sameProducts)
+                    return true;
+            }
+
+            return false;
         }
 
-        public bool IsOrderDuplicated(Order order)
+        public decimal CalculateOrdersItemsTotalValue(Order order)
         {
-            throw new NotImplementedException();
+            var totalItemsValue = order.Items.Sum(x => x.Price * x.Quantity);
+            return totalItemsValue;
         }
     }
 }
